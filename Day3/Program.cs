@@ -80,10 +80,10 @@ namespace Advent
 
                 index++;
             }
-            Console.WriteLine(String.Join(",", populated.Where(x => x.Value[0] > 0 && x.Value[1] > 0).Select(x => x.Key.Item1 + "," + x.Key.Item2 + "\n")));
+            //Console.WriteLine(String.Join(",", populated.Where(x => x.Value[0] > 0 && x.Value[1] > 0).Select(x => x.Key.Item1 + "," + x.Key.Item2 + "\n")));
             Console.WriteLine(populated.Where(x => x.Value[0] > 0 && x.Value[1] > 0).OrderBy(x => Math.Abs(x.Key.Item1) + Math.Abs(x.Key.Item2)).First());
 
-            Console.WriteLine(populated.Where(x => x.Value[0] > 0 && x.Value[1] > 0).OrderBy(x => x.Value[0]+x.Value[1]).First());
+            //Console.WriteLine(populated.Where(x => x.Value[0] > 0 && x.Value[1] > 0).OrderBy(x => x.Value[0]+x.Value[1]).First());
             Console.WriteLine(String.Join(",",populated.Where(x => x.Value[0] > 0 && x.Value[1] > 0).OrderBy(x => x.Value[0]+x.Value[1]).First().Value));
             Console.WriteLine("done.");
             Console.ReadLine();
