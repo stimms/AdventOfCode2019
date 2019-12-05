@@ -26,7 +26,6 @@ namespace Advent
                     {
                         if (memory[counter] == 1)
                         {
-
                             memory[memory[counter + 3]] = memory[memory[counter + 1]] + memory[memory[counter + 2]];
                         }
                         else if (memory[counter] == 2)
