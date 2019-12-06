@@ -19,8 +19,20 @@ namespace Advent
             var memory = lines[0].Split(",").Select(x => Int32.Parse(x)).ToArray();
             //Console.WriteLine(GetOpCode("1002"));
 
+            Console.WriteLine(compute("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", 5));//999
+            Console.WriteLine(compute("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", 8));//1000
+            Console.WriteLine(compute("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", 9));//1001
+            Console.WriteLine(compute(lines[0], 5));
+            Console.WriteLine("done.");
+            Console.ReadLine();
+        }
+
+        private static string compute(string instructions, int input)
+        {
             var counter = 0;
-            memory = lines[0].Split(",").Select(x => Int32.Parse(x)).ToArray();
+            var memory = instructions.Split(",").Select(x => Int32.Parse(x)).ToArray();
+
+            string output = "";
 
             while (counter < memory.Count())
             {
@@ -30,37 +42,68 @@ namespace Advent
                 int parameter1 = mode1 == POSITION ? memory[memory[counter + 1]] : memory[counter + 1];
                 int parameter2 = 0;
                 int parameter3 = 0;
-                if (opCode != 3 && opCode != 4)
+                if (opCode == 1 || opCode == 2 || opCode == 7 || opCode == 8)
                 {
-                    parameter2 = mode2 == POSITION ? memory[memory[counter + 2]] : memory[counter + 2] ;
-                    parameter3 = memory[counter + 3] ;
+                    parameter2 = mode2 == POSITION ? memory[memory[counter + 2]] : memory[counter + 2];
+                    parameter3 = mode3 == POSITION ? memory[memory[counter + 3]] : memory[counter + 3];
+                }
+                if (opCode == 5 || opCode == 6)
+                {
+                    parameter2 = mode2 == POSITION ? memory[memory[counter + 2]] : memory[counter + 2];
                 }
                 if (opCode == 1)
                 {
-                    memory[parameter3] = parameter1 + parameter2;
+                    memory[memory[counter + 3]] = parameter1 + parameter2;
                     counter += 4;
                 }
                 else if (opCode == 2)
                 {
-                    memory[parameter3] = parameter1 * parameter2;
+                    memory[memory[counter + 3]] = parameter1 * parameter2;
                     counter += 4;
                 }
                 else if (opCode == 3)
                 {
                     Console.Write(">");
-                    memory[225] = 1;//Int32.Parse(Console.ReadLine());
+                    memory[memory[counter + 1]] = input;//Int32.Parse(Console.ReadLine());
                     counter += 2;
                 }
                 else if (opCode == 4)
                 {
-                    Console.Write(parameter1);
+                    output += parameter1;
                     counter += 2;
                 }
-                
-            }
 
-            Console.WriteLine("done.");
-            Console.ReadLine();
+                else if (opCode == 5 && parameter1 != 0)
+                {
+                    counter = parameter2;
+                }
+                else if (opCode == 5)
+                {
+                    counter += 3;
+                }
+
+                else if (opCode == 6 && parameter1 == 0)
+                {
+                    counter = parameter2;
+                }
+                else if (opCode == 6)
+                {
+                    counter += 3;
+                }
+
+                else if (opCode == 7)
+                {
+                    memory[memory[counter + 3]] = parameter1 < parameter2 ? 1 : 0;
+                    counter += 4;
+                }
+                else if (opCode == 8)
+                {
+                    memory[memory[counter + 3]] = parameter1 == parameter2 ? 1 : 0;
+                    counter += 4;
+                }
+
+            }
+            return output;
         }
 
         private static (int opCode, int mode1, int mode2, int mode3) GetOpCode(string entry)
