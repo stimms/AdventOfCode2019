@@ -25,33 +25,44 @@ namespace Advent
             // Console.WriteLine(compute("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", 8));//1000
             // Console.WriteLine(compute("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99", 9));//1001
 
-            var max = 0;
+            long max = long.MinValue;
             var maxPerm = "";
 
-            for (int i = 0; i < 5; i++)
-                states.Add(lines[0].Split(",").Select(x => Int32.Parse(x)).ToArray());
+            
 
-            foreach (var perm in "43210".Permutations())
+            foreach (var perm in "98765".Permutations())
             {
-                int previous = 0;
+                Console.Write(".");
+                long previous = 0;
                 int currentMachine = 0;
-                var inputs = new List<Queue<int>>();
+                var inputs = new List<Queue<long>>();
                 for (int i = 0; i < 5; i++){
-                    var queue = new Queue<int>();
+                    var queue = new Queue<long>();
+                    queue.Enqueue(Int32.Parse(perm[i].ToString()));
                     inputs.Add(queue);
                 }
+                var programCounters = new long[]{0,0,0,0,0};
+                var states = new List<long[]>();
+                for (int i = 0; i < 5; i++)
+                    states.Add(lines[0].Split(",").Select(x => long.Parse(x)).ToArray());
+                //inputs[0].Enqueue(Int32.Parse(perm[0].ToString()));
                 inputs[0].Enqueue(0);//prime
-                inputs[0].Enqueue(Int32.Parse(perm[0].ToString()));
+                long lastE = 0;
                 while (true)
                 {
-                    var computed = compute(states[currentMachine], inputs[currentMachine]);
-                    inputs[(currentMachine + 1) % 5].Enqueue(Int32.Parse(perm[(currentMachine + 1) % 5].ToString()));
-                    inputs[(currentMachine + 1) % 5].Enqueue(int.Parse(computed.output));
-                    if (computed.halted){
-                        previous = Int32.Parse(computed.output);
+                    var computed = compute(states[currentMachine], programCounters[currentMachine], inputs[currentMachine]);
+                    inputs[(currentMachine + 1) % 5].Enqueue(computed.output);
+                    //inputs[(currentMachine + 1) % 5].Enqueue(Int32.Parse(perm[(currentMachine + 1) % 5].ToString()));
+                    
+                    programCounters[currentMachine] = computed.counter;
+
+                    if (computed.halted ){
+                        previous = lastE;
                         break;
+                    }else{
+                        lastE = computed.output;
                     }
-                    Console.WriteLine(currentMachine);
+                    Console.WriteLine(computed.output);
                     currentMachine = (currentMachine + 1) % 5;
                 }
                 if (previous > max)
@@ -59,6 +70,7 @@ namespace Advent
                     maxPerm = String.Join("", perm);
                     max = previous;
                 }
+                
             }
             Console.WriteLine(maxPerm);
             Console.WriteLine(max);
@@ -67,22 +79,22 @@ namespace Advent
             Console.ReadLine();
         }
 
-        private static List<int[]> states = new List<int[]>();
-        private static (string output, bool halted) compute(int[] memory, Queue<int> inputs)
+        
+        private static (long output, bool halted, long counter) compute(long[] memory, long programCounter, Queue<long> inputs)
         {
-            var counter = 0;
+            long counter = programCounter;
 
 
-            string output = "";
+            long output = 0;
 
             while (counter < memory.Count())
             {
                 (int opCode, int mode1, int mode2, int mode3) = GetOpCode(memory[counter].ToString());
                 if (memory[counter] == 99)
-                    return (output, true);
-                int parameter1 = mode1 == POSITION ? memory[memory[counter + 1]] : memory[counter + 1];
-                int parameter2 = 0;
-                int parameter3 = 0;
+                    return (output, true, counter);
+                long parameter1 = mode1 == POSITION ? memory[memory[counter + 1]] : memory[counter + 1];
+                long parameter2 = 0;
+                long parameter3 = 0;
                 if (opCode == 1 || opCode == 2 || opCode == 7 || opCode == 8)
                 {
                     parameter2 = mode2 == POSITION ? memory[memory[counter + 2]] : memory[counter + 2];
@@ -106,14 +118,15 @@ namespace Advent
                 {
                     //Console.Write(">");
                     if (!inputs.Any())
-                        return (output, false);
+                        return (output, false, counter);
                     memory[memory[counter + 1]] = inputs.Dequeue();
                     counter += 2;
                 }
                 else if (opCode == 4)
                 {
-                    output += parameter1;
+                    output = parameter1;
                     counter += 2;
+                    return (output, false, counter);
                 }
 
                 else if (opCode == 5 && parameter1 != 0)
@@ -146,7 +159,7 @@ namespace Advent
                 }
 
             }
-            return (output, true);
+            return (output, true, counter);
         }
 
         private static (int opCode, int mode1, int mode2, int mode3) GetOpCode(string entry)
