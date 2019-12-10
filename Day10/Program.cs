@@ -123,15 +123,64 @@ namespace Advent
                 }
             printArray(visibleCount);
             int max = 0;
+            int maxX = 0;
+            int maxY = 0;
             for (int x = 0; x < Math.Sqrt(visibleCount.Length); x++)
             {
                 for (int y = 0; y < Math.Sqrt(visibleCount.Length); y++)
                 {
                     if (max < visibleCount[y, x])
+                    {
                         max = visibleCount[y, x];
+                        maxX = x;
+                        maxY = y;
+                    }
                 }
             }
             Console.WriteLine(max);
+
+
+            //part 2
+            int zappedCount = 0;
+            double radIncrement = Math.Atan(1 / (double)girdSize);
+
+
+            var currentRad = Math.PI / 2;
+            while (currentRad >= 0)
+            {
+                double radius = 1;
+                while (radius < girdSize)
+                {
+                    var opp = Math.Sin(currentRad) * radius;
+                    if (Double.IsNaN(opp))
+                        opp = 0;
+                    var adj = Math.Cos(currentRad) * radius;
+                    if (Double.IsNaN(adj))
+                        adj = radius;
+                    if (Math.Abs(opp % 1) < (0.00000000001) && Math.Abs(adj % 1) < (0.0000000001))
+                    {
+                        //whole number to check
+                        if (adj + maxY < girdSize && opp + maxX < girdSize)
+                        {
+                            if (asteroids[(int)adj + maxY, (int)opp + maxX])
+                            {
+                                asteroids[(int)adj + maxY, (int)opp + maxX] = false;
+                                zappedCount++;
+                                if (zappedCount == 200)
+                                {
+                                    Console.WriteLine(opp + "," + adj);
+                                }
+                            }
+                        }
+                    }
+                    radius+=(1/(double)girdSize);
+                }
+                currentRad -= radIncrement;
+            }
+
+
+
+
             Console.WriteLine("done.");
             Console.ReadLine();
         }
