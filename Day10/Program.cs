@@ -26,6 +26,7 @@ namespace Advent
                 lineCounter++;
             }
 
+            var girdSize = lines.Length;
             var visibleCount = new int[lines[0].Length, lines.Length];
             for (int y = 0; y < lines[0].Length; y++)
                 for (int x = 0; x < lines[0].Length; x++)
@@ -35,117 +36,125 @@ namespace Advent
 
                         //rays to top row
                         var workingAsteroids = asteroids.Clone() as bool[,];
-                        for (int x1 = 0; x1 < lines[0].Length; x1++)
+                        //printBoolArray(workingAsteroids);
+                        for (int i = 0; y + i < girdSize; i++)
                         {
-                            //x run
-                            var run = x1 - x;
-                            //y rise
-                            var rise = y;
-
-                            //reduce
-                            if (rise != 0 && run % rise == 0)
-                                run = run / rise;
-                            if (rise == 0)
-                                run = 1;
-                            if (run != 0 && rise % run == 0)
-                                rise = rise / run;
-                            if (run == 0)
-                                rise = 1;
-                            bool appears = false;
-                            int steps = 1;
-                            while (x + (run * steps) >= 0 && x + (run * steps) < lines.Length && y + (rise * steps) >= 0 && y + (rise * steps) < lines.Length)
+                            for (int j = 0; x + j < girdSize; j++)
                             {
-                                if (workingAsteroids[y + (rise * steps), x + (run * steps)])
-                                {
-                                    appears = true;
-                                    workingAsteroids[y + (rise * steps), x + (run * steps)] = false;
+                                int step = 1;
+                                bool found = false;
+                                while ((step * i) + y >= 0 && (step * i) + y < girdSize && (step * j) + x >= 0 && (step * j) + x < girdSize && !(i == 0 && j == 0))
+                                {//along the ray
+                                    if (workingAsteroids[y + (i * step), x + (j * step)])
+                                    {
+                                        found = true;
+                                        workingAsteroids[y + (i * step), x + (j * step)] = false;
+                                    }
+                                    step++;
                                 }
-                                steps++;
+                                if (found)
+                                    visibleCount[y, x]++;
                             }
 
-                            if (appears)
-                            {
-                                visibleCount[y, x]++;
-                            }
-                            appears = false;
-                            steps = -1;
-                            while (x + (run * steps) >= 0 && x + (run * steps) < lines.Length && y + (rise * steps) >= 0 && y + (rise * steps) < lines.Length)
-                            {
-                                if (workingAsteroids[y + (rise * steps), x + (run * steps)])
-                                {
-                                    appears = true;
-                                    workingAsteroids[y + (rise * steps), x + (run * steps)] = false;
-                                }
-                                steps--;
-                            }
-                            if (appears)
-                            {
-                                visibleCount[y, x]++;
-                            }
                         }
-
-
-                        //rays to left col
-                        //rays to righ col
-                        //rays to bottom row
-                        for (int x1 = 0; x1 < lines[0].Length; x1++)
+                        for (int i = 0; y + i >= 0; i--)
                         {
-                            //x run
-                            var run = x1 - x;
-                            //y rise
-                            var rise = lines.Length - y;
-
-                            //reduce
-                            if (rise != 0 && run % rise == 0)
-                                run = run / rise;
-                            if (rise == 0)
-                                run = 1;
-                            if (run != 0 && rise % run == 0)
-                                rise = rise / run;
-                            if (run == 0)
-                                rise = 1;
-                            bool appears = false;
-                            int steps = 1;
-                            while (x + (run * steps) >= 0 && x + (run * steps) < lines.Length && y + (rise * steps) >= 0 && y + (rise * steps) < lines.Length)
+                            for (int j = 0; x + j < girdSize; j++)
                             {
-                                if (workingAsteroids[y + (rise * steps), x + (run * steps)])
-                                {
-                                    appears = true;
-                                    workingAsteroids[y + (rise * steps), x + (run * steps)] = false;
+                                int step = 1;
+                                bool found = false;
+                                while ((step * i) + y >= 0 && (step * i) + y < girdSize && (step * j) + x >= 0 && (step * j) + x < girdSize && !(i == 0 && j == 0))
+                                {//along the ray
+                                    if (workingAsteroids[y + (i * step), x + (j * step)])
+                                    {
+                                        found = true;
+                                        workingAsteroids[y + (i * step), x + (j * step)] = false;
+                                    }
+                                    step++;
                                 }
-                                steps++;
+                                if (found)
+                                    visibleCount[y, x]++;
                             }
 
-                            if (appears)
-                            {
-                                visibleCount[y, x]++;
-                            }
-                            appears = false;
-                            steps = -1;
-                            while (x + (run * steps) >= 0 && x + (run * steps) < lines.Length && y + (rise * steps) >= 0 && y + (rise * steps) < lines.Length)
-                            {
-                                if (workingAsteroids[y + (rise * steps), x + (run * steps)])
-                                {
-                                    appears = true;
-                                    workingAsteroids[y + (rise * steps), x + (run * steps)] = false;
-                                }
-                                steps--;
-                            }
-                            if (appears)
-                            {
-                                visibleCount[y, x]++;
-                            }
                         }
+                        for (int i = 0; y + i < girdSize; i++)
+                        {
+                            for (int j = 0; x + j >= 0; j--)
+                            {
+                                int step = 1;
+                                bool found = false;
+                                while ((step * i) + y >= 0 && (step * i) + y < girdSize && (step * j) + x >= 0 && (step * j) + x < girdSize && !(i == 0 && j == 0))
+                                {//along the ray
+                                    if (workingAsteroids[y + (i * step), x + (j * step)])
+                                    {
+                                        found = true;
+                                        workingAsteroids[y + (i * step), x + (j * step)] = false;
+                                    }
+                                    step++;
+                                }
+                                if (found)
+                                    visibleCount[y, x]++;
+                            }
+
+                        }
+                        for (int i = 0; y + i >= 0; i--)
+                        {
+                            for (int j = 0; x + j >= 0; j--)
+                            {
+                                int step = 1;
+                                bool found = false;
+                                while ((step * i) + y >= 0 && (step * i) + y < girdSize && (step * j) + x >= 0 && (step * j) + x < girdSize && !(i == 0 && j == 0))
+                                {//along the ray
+                                    if (workingAsteroids[y + (i * step), x + (j * step)])
+                                    {
+                                        found = true;
+                                        workingAsteroids[y + (i * step), x + (j * step)] = false;
+                                    }
+                                    step++;
+                                }
+                                if (found)
+                                    visibleCount[y, x]++;
+                            }
+
+                        }
+                        //printBoolArray(workingAsteroids);
+
                     }
                 }
-            for (int x = 0; x < lines[0].Length; x++)
+            printArray(visibleCount);
+            int max = 0;
+            for (int x = 0; x < Math.Sqrt(visibleCount.Length); x++)
             {
-                for (int y = 0; y < lines[0].Length; y++)
-                    Console.Write(visibleCount[x, y]);
-                Console.WriteLine();
+                for (int y = 0; y < Math.Sqrt(visibleCount.Length); y++)
+                {
+                    if (max < visibleCount[y, x])
+                        max = visibleCount[y, x];
+                }
             }
+            Console.WriteLine(max);
             Console.WriteLine("done.");
             Console.ReadLine();
         }
+
+        private static void printArray(int[,] toPrint)
+        {
+            for (int x = 0; x < Math.Sqrt(toPrint.Length); x++)
+            {
+                for (int y = 0; y < Math.Sqrt(toPrint.Length); y++)
+                    Console.Write(toPrint[x, y] > 0 ? toPrint[x, y].ToString() : ".");
+                Console.WriteLine();
+            }
+        }
+
+        private static void printBoolArray(bool[,] toPrint)
+        {
+            for (int x = 0; x < Math.Sqrt(toPrint.Length); x++)
+            {
+                for (int y = 0; y < Math.Sqrt(toPrint.Length); y++)
+                    Console.Write(toPrint[x, y] ? "#" : ".");
+                Console.WriteLine();
+            }
+        }
+
     }
 }
