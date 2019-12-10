@@ -141,46 +141,56 @@ namespace Advent
 
 
             //part 2
-            int zappedCount = 0;
-            double radIncrement = Math.Atan(1 / (double)girdSize);
-
-
-            var currentRad = Math.PI / 2;
-            while (currentRad >= 0)
+            var otherPoints = new List<(int x, int y)>();
+            for (int x = 0; x < Math.Sqrt(visibleCount.Length); x++)
             {
-                double radius = 1;
-                while (radius < girdSize)
+                for (int y = 0; y < Math.Sqrt(visibleCount.Length); y++)
                 {
-                    var opp = Math.Sin(currentRad) * radius;
-                    if (Double.IsNaN(opp))
-                        opp = 0;
-                    var adj = Math.Cos(currentRad) * radius;
-                    if (Double.IsNaN(adj))
-                        adj = radius;
-                    if (Math.Abs(opp % 1) < (0.00000000001) && Math.Abs(adj % 1) < (0.0000000001))
+                    if (!(x == maxX && y == maxY) && asteroids[y, x])
                     {
-                        //whole number to check
-                        if (adj + maxY < girdSize && opp + maxX < girdSize)
-                        {
-                            if (asteroids[(int)adj + maxY, (int)opp + maxX])
-                            {
-                                asteroids[(int)adj + maxY, (int)opp + maxX] = false;
-                                zappedCount++;
-                                if (zappedCount == 200)
-                                {
-                                    Console.WriteLine(opp + "," + adj);
-                                }
-                            }
-                        }
+                        otherPoints.Add((y, x));
                     }
-                    radius+=(1/(double)girdSize);
                 }
-                currentRad -= radIncrement;
             }
+            var ordered = otherPoints.OrderBy(p =>
+            {
+                var xSide = p.x - maxX;
+                var ySide = p.y - maxY;
+                if (xSide > 0 && ySide < 0)
+                    return Math.Atan(Math.Abs(xSide) / Math.Abs(ySide));
+                if (xSide > 0 && ySide > 0)
+                    return Math.PI / 2 + Math.Atan(Math.Abs(ySide) / Math.Abs(xSide));
+                if (xSide < 0 && ySide > 0)
+                    return Math.PI + Math.Atan(Math.Abs(xSide) / Math.Abs(ySide));
+                if (xSide < 0 && ySide < 0)
+                    return (1.5 * Math.PI) + Math.Atan(Math.Abs(ySide) / Math.Abs(xSide));
+                if (xSide == 0 && ySide < 0)
+                    return 0;
+                if (xSide > 0 && ySide == 0)
+                    return Math.PI / 2;
+                if (xSide == 0 && ySide > 0)
+                    return Math.PI;
+                return 1.5 * Math.PI;
+            }).ThenByDescending(p => Math.Sqrt(Math.Pow(maxX - p.x, 2) + Math.Pow(maxY - p.y, 2)));
 
-
-
-
+            var zapOrder = new int[lines[0].Length, lines.Length];
+            int t = 0;
+            foreach (var item in ordered)
+            {
+                zapOrder[item.y, item.x] = t;
+                t++;
+            }
+            //printArray(zapOrder);
+            if (zapOrder.Length > 200)
+            {
+                for (int x = 0; x < Math.Sqrt(zapOrder.Length); x++)
+                {
+                    for (int y = 0; y < Math.Sqrt(zapOrder.Length); y++)
+                    if(zapOrder[y,x]==199)
+                    Console.WriteLine($"{x},{y}");
+                 
+                }
+            }
             Console.WriteLine("done.");
             Console.ReadLine();
         }
