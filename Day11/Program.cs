@@ -33,8 +33,8 @@ namespace Advent
             {
                 long colorToPaint;
                 long direction;
-                (colorToPaint, halted) = compute(painted.ContainsKey(robotLocation) ? painted[robotLocation] : BLACK);//(testColors[counter], false);
-                (direction, halted) = compute(painted.ContainsKey(robotLocation) ? painted[robotLocation] : BLACK);//(testRotations[counter++], counter == 6 ? true: false);
+                (colorToPaint, halted) = compute(painted.ContainsKey(robotLocation) ? painted[robotLocation] : BLACK);
+                (direction, halted) = compute(painted.ContainsKey(robotLocation) ? painted[robotLocation] : BLACK);
                 painted[robotLocation] = colorToPaint;
                 if (direction == 1)
                 {
@@ -67,11 +67,11 @@ namespace Advent
             var minY = painted.Min(x => x.Key.Item2);
             var maxX = painted.Max(x => x.Key.Item1);
             var maxY = painted.Max(x => x.Key.Item2);
-            for (int i = 0; i < Math.Abs(minX) + Math.Abs(maxX); i++)
+            for (int i = 0; i <= Math.Abs(minY) + Math.Abs(maxY); i++)
             {
-                for (int j = 0; j < Math.Abs(minY) + Math.Abs(maxY); j++)
+                for (int j = 0; j <= Math.Abs(minX) + Math.Abs(maxX); j++)
                 {
-                    Console.Write(painted.ContainsKey((i-Math.Abs(minX),j-Math.Abs(minY))) ? painted[(i-Math.Abs(minX),j-Math.Abs(minY))] == BLACK ? "." : "#" : ".");
+                    Console.Write(painted.ContainsKey((j-Math.Abs(minY),i-Math.Abs(minX))) ? painted[(j-Math.Abs(minY),i-Math.Abs(minX))] == BLACK ? " " : "#" : " ");
                 }
                 Console.WriteLine();
             }
@@ -82,10 +82,11 @@ namespace Advent
 
         static long[] memory;
         static int counter = 0;
+        static int relatvieBase = 0;
         private static (long output, bool halted) compute(long input = 0)
         {
 
-            var relatvieBase = 0;
+            
 
             while (counter < memory.Count())
             {
