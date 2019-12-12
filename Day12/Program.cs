@@ -19,7 +19,7 @@ namespace Advent
                 moons.Add((Int32.Parse(segments[1]), Int32.Parse(segments[3]), Int32.Parse(segments[5]), 0, 0, 0));
             }
             var initial = (moons.ToArray().Clone() as (int xpos, int ypos, int zpos, int xvel, int yvel, int zvel)[]).ToList();
-            for (int i = 0; loopCounter.Count < 12; i++)
+            for (int i = 0; loopCounter.Count < 3; i++)
             {
                 var temp = new List<(int xpos, int ypos, int zpos, int xvel, int yvel, int zvel)>();
                 foreach (var moon in moons)
@@ -35,26 +35,15 @@ namespace Advent
                 }
                 moons = temp;
 
-                findLowest(i, 0, moons[0], initial[0]);
-                findLowest(i, 1, moons[1], initial[1]);
-                findLowest(i, 2, moons[2], initial[2]);
-                findLowest(i, 3, moons[3], initial[3]);
+                findLowest(i, 0, moons[0], moons[1], moons[2], moons[3]);
+
             }
-            var values = loopCounter.OrderBy(x => x.Key.Item1).Select(x => x.Value + 1).ToArray();
-            var moon0Cycle = lcm(values[0], lcm(values[1], values[2]));
-            var moon1Cycle = lcm(values[3], lcm(values[4], values[5]));
-            var moon2Cycle = lcm(values[6], lcm(values[7], values[8]));
-            var moon3Cycle = lcm(values[9], lcm(values[10], values[11]));
-            Console.WriteLine(moon0Cycle);
-            Console.WriteLine(moon1Cycle);
-            Console.WriteLine(moon2Cycle);
-            Console.WriteLine(moon3Cycle);
 
-
-            Console.WriteLine(loopCounter.Select(x=>(long)x.Value+1).Distinct().Aggregate((long)1, (current, next) => {
+            Console.WriteLine(loopCounter.Select(x=>x.value).Distinct().Aggregate((long)1, (current, next) =>
+            {
                 return lcm(current, next);
             }));
-            //Console.WriteLine(lcm(values[0], lcm(values[1], lcm(values[2], lcm(values[3], lcm(values[4], lcm(values[5], lcm(values[6], lcm(values[7], lcm(values[8], lcm(values[9], lcm(values[10], values[11]))))))))))));
+            
             Console.WriteLine(moons.Sum(x => (Math.Abs(x.xpos) + Math.Abs(x.ypos) + Math.Abs(x.zpos)) * (Math.Abs(x.xvel) + Math.Abs(x.yvel) + Math.Abs(x.zvel))));
             Console.WriteLine("done.");
             Console.ReadLine();
@@ -75,22 +64,38 @@ namespace Advent
         {
             return (a / gcf(a, b)) * b;
         }
-        static Dictionary<(int, int), int> loopCounter = new Dictionary<(int, int), int>();
-        private static void findLowest(int i, int moonNumber, (int xpos, int ypos, int zpos, int xvel, int yvel, int zvel) current, (int xpos, int ypos, int zpos, int xvel, int yvel, int zvel) initial)
+        static List<(int dimension,int value)> loopCounter = new List<(int dimension,int value)>();
+
+        static HashSet<(int, int, int, int, int, int, int, int)> seenX = new HashSet<(int, int, int, int, int, int, int, int)>();
+        static HashSet<(int, int, int, int, int, int, int, int)> seenY = new HashSet<(int, int, int, int, int, int, int, int)>();
+        static HashSet<(int, int, int, int, int, int, int, int)> seenZ = new HashSet<(int, int, int, int, int, int, int, int)>();
+        private static void findLowest(int i, int moonNumber, (int xpos, int ypos, int zpos, int xvel, int yvel, int zvel) moon0, (int xpos, int ypos, int zpos, int xvel, int yvel, int zvel) moon1, (int xpos, int ypos, int zpos, int xvel, int yvel, int zvel) moon2, (int xpos, int ypos, int zpos, int xvel, int yvel, int zvel) moon3)
         {
-            if (current.xpos == initial.xpos && current.xvel == initial.xvel && !loopCounter.ContainsKey((moonNumber, 0)))
+            if (seenX.Contains((moon0.xpos, moon0.xvel, moon1.xpos, moon1.xvel, moon2.xpos, moon2.xvel, moon3.xpos, moon3.xvel)) && !loopCounter.Any(x=>x.dimension == 0))
             {
-                loopCounter[(moonNumber, 0)] = i;
+                loopCounter.Add((0, i));
+            }
+            else
+            {
+                seenX.Add((moon0.xpos, moon0.xvel, moon1.xpos, moon1.xvel, moon2.xpos, moon2.xvel, moon3.xpos, moon3.xvel));
             }
 
-            if (current.ypos == initial.ypos && current.yvel == initial.yvel && !loopCounter.ContainsKey((moonNumber, 1)))
+            if (seenY.Contains((moon0.ypos, moon0.yvel, moon1.ypos, moon1.yvel, moon2.ypos, moon2.yvel, moon3.ypos, moon3.yvel)) && !loopCounter.Any(x=>x.dimension == 1))
             {
-                loopCounter[(moonNumber, 1)] = i;
+                loopCounter.Add((1,i));
+            }
+            else
+            {
+                seenY.Add((moon0.ypos, moon0.yvel, moon1.ypos, moon1.yvel, moon2.ypos, moon2.yvel, moon3.ypos, moon3.yvel));
             }
 
-            if (current.zpos == initial.zpos && current.zvel == initial.zvel && !loopCounter.ContainsKey((moonNumber, 2)))
+            if (seenZ.Contains((moon0.zpos, moon0.zvel, moon1.zpos, moon1.zvel, moon2.zpos, moon2.zvel, moon3.zpos, moon3.zvel)) && !loopCounter.Any(x=>x.dimension == 2))
             {
-                loopCounter[(moonNumber, 2)] = i;
+                loopCounter.Add((2,i));
+            }
+            else
+            {
+                seenZ.Add((moon0.zpos, moon0.zvel, moon1.zpos, moon1.zvel, moon2.zpos, moon2.zvel, moon3.zpos, moon3.zvel));
             }
 
 
