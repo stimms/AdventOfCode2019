@@ -13,11 +13,41 @@ namespace Advent
 
     class Program
     {
+        static List<Reaction> reactions;
+        static Dictionary<string, int> surpluss = new Dictionary<string, int>();
+        static int generate(string chemical, int qty)
+        {
+            var result = 0;
+            var reaction = reactions.Where(x => x.output.chemical == chemical).Single();
+            var multiplier = (int)Math.Ceiling((double)qty / (double)reaction.output.qty);
+            foreach (var input in reaction.inputs.Select(x => (qty: x.qty, x.chemical)))
+            {
+                if (!surpluss.ContainsKey(chemical))
+                    surpluss[chemical] = 0;
+                if (!surpluss.ContainsKey(input.chemical))
+                    surpluss[input.chemical] = 0;
+
+                if (input.chemical == "ORE")
+                    result += input.qty * multiplier;
+                else
+                {
+                    if (surpluss[input.chemical] < multiplier * input.qty)
+                    {
+                        result += generate(input.chemical, input.qty * multiplier- surpluss[input.chemical]);
+                    }
+                    surpluss[input.chemical] -= multiplier * input.qty;
+                }
+            }
+            surpluss[chemical] += multiplier * reaction.output.qty;
+            return result;
+        }
+
+
         static void Main(string[] args)
         {
             Console.WriteLine("Starting");
             foreach (var file in new string[] {
-                "input.test1.txt",
+                //"input.test1.txt",
                 "input.test2.txt",
                 "input.test3.txt",
                 "input.test4.txt",
@@ -25,7 +55,8 @@ namespace Advent
                 "input.txt" })
             {
                 var lines = File.ReadAllLines(file);
-                var reactions = new List<Reaction>();
+                surpluss = new Dictionary<string, int>();
+                reactions = new List<Reaction>();
                 foreach (var line in lines)
                 {
                     var tempInputs = line.Split("=>").First().Split(",");
@@ -39,39 +70,10 @@ namespace Advent
                     var tempChemical = line.Split("=>").Last().Trim().Split(" ");
                     reactions.Add(new Reaction { inputs = inputs, output = (Int32.Parse(tempChemical.First()), tempChemical.Last()) });
                 }
-                var needed = reactions.Where(x => x.output.chemical == "FUEL").Single().inputs;
-                var surpluss = new Dictionary<string, int>();
+                Console.WriteLine(generate("FUEL", 1));
 
-                while (needed.Any(x => x.chemical != "ORE"))
-                {
-                    var newNeeded = needed.Where(x => x.chemical == "ORE").ToList();
 
-                    foreach (var need in needed.Where(x => x.chemical != "ORE"))
-                    {
-                        var reaction = reactions.Where(x => x.output.chemical == need.chemical).Single();
-                        var workingNeed = (need.qty, need.chemical);
-                        if (surpluss.ContainsKey(workingNeed.chemical))
-                        {
-                            if (workingNeed.qty > surpluss[workingNeed.chemical])
-                            {
-                                workingNeed.qty -= surpluss[workingNeed.chemical];
-                                surpluss[workingNeed.chemical] = 0;
-                            }
-                            else
-                            {
-                                surpluss[workingNeed.chemical] = surpluss[workingNeed.chemical] - workingNeed.qty;
-                                workingNeed.qty = 0;
-                            }
-                        }
 
-                        var multiplier = (int)Math.Ceiling((double)workingNeed.qty / reaction.output.qty);
-                        newNeeded.AddRange(reaction.inputs.Select(x => (x.qty * multiplier, x.chemical)));
-                        surpluss[reaction.output.chemical] = (reaction.output.qty * multiplier) - workingNeed.qty;
-                    }
-                    //compact
-                    needed = newNeeded.GroupBy(x => x.chemical).Select(x => (x.Sum(y => y.qty), x.Key)).ToList();
-                }
-                Console.WriteLine(needed.Sum(x => x.qty));
             }
             Console.WriteLine("done.");
             Console.ReadLine();
