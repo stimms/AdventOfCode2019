@@ -17,11 +17,11 @@ namespace Advent
         {
             Console.WriteLine("Starting");
             foreach (var file in new string[] {
-                // "input.test1.txt",
-                // "input.test2.txt",
-                // "input.test3.txt",
-                // "input.test4.txt",
-                // "input.test5.txt",
+                "input.test1.txt",
+                "input.test2.txt",
+                "input.test3.txt",
+                "input.test4.txt",
+                "input.test5.txt",
                 "input.txt" })
             {
                 var lines = File.ReadAllLines(file);
@@ -41,6 +41,7 @@ namespace Advent
                 }
                 var needed = reactions.Where(x => x.output.chemical == "FUEL").Single().inputs;
                 var surpluss = new Dictionary<string, int>();
+
                 while (needed.Any(x => x.chemical != "ORE"))
                 {
                     var newNeeded = needed.Where(x => x.chemical == "ORE").ToList();
@@ -66,9 +67,9 @@ namespace Advent
                         var multiplier = (int)Math.Ceiling((double)workingNeed.qty / reaction.output.qty);
                         newNeeded.AddRange(reaction.inputs.Select(x => (x.qty * multiplier, x.chemical)));
                         surpluss[reaction.output.chemical] = (reaction.output.qty * multiplier) - workingNeed.qty;
-
                     }
-                    needed = newNeeded;
+                    //compact
+                    needed = newNeeded.GroupBy(x => x.chemical).Select(x => (x.Sum(y => y.qty), x.Key)).ToList();
                 }
                 Console.WriteLine(needed.Sum(x => x.qty));
             }
