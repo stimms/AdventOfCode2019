@@ -13,13 +13,13 @@ namespace Advent
     {
         static long HIT_WALL = 0;
         static long MOVED_ONE = 1;
-        static long MOVED_AND_AT_02 = 3;
+        static long MOVED_AND_AT_02 = 2;
         static int NORTH = 1;
         static int SOUTH = 2;
         static int WEST = 3;
         static int EAST = 4;
-        static Dictionary<(int x, int y), long> visited = new Dictionary<(int, int), long>();
-        private static void Explore(IntercodeVM vm, (int x, int y) location)
+        static Dictionary<(int x, int y), (long type, int steps)> visited = new Dictionary<(int, int), (long, int)>();
+        private static void Explore(IntercodeVM vm, (int x, int y) location, int steps)
         {
             var newLocation = (location.x, location.y + 1);
             var north = vm.Clone();
@@ -28,14 +28,16 @@ namespace Advent
             var northResult = north.compute(northQueue);
             if (northResult.output == MOVED_ONE || northResult.output == MOVED_AND_AT_02)
             {
-                if (!visited.ContainsKey(newLocation))
+                if (!visited.ContainsKey(newLocation) || visited[newLocation].steps > steps)
                 {
-                    visited.Add(newLocation, MOVED_ONE);
-                    Explore(north, newLocation);
+                    visited[newLocation] = (northResult.output, steps);
+                    Explore(north, newLocation, steps + 1);
                 }
             }
-            else
-                visited[newLocation] = northResult.output;
+            else if (!visited.ContainsKey(newLocation) || visited[newLocation].steps > steps)
+            {
+                visited[newLocation] = (northResult.output, steps);
+            }
 
             newLocation = (location.x, location.y - 1);
             var south = vm.Clone();
@@ -44,14 +46,16 @@ namespace Advent
             var southResult = south.compute(southQueue);
             if (southResult.output == MOVED_ONE || southResult.output == MOVED_AND_AT_02)
             {
-                if (!visited.ContainsKey(newLocation))
+                if (!visited.ContainsKey(newLocation) || visited[newLocation].steps > steps)
                 {
-                    visited.Add(newLocation, MOVED_ONE);
-                    Explore(south, newLocation);
+                    visited[newLocation] = (southResult.output, steps);
+                    Explore(south, newLocation, steps + 1);
                 }
             }
-            else
-                visited[newLocation] = southResult.output;
+            else if (!visited.ContainsKey(newLocation) || visited[newLocation].steps > steps)
+            {
+                visited[newLocation] = (southResult.output, steps);
+            }
 
             newLocation = (location.x - 1, location.y);
             var east = vm.Clone();
@@ -60,14 +64,16 @@ namespace Advent
             var eastResult = east.compute(eastQueue);
             if (eastResult.output == MOVED_ONE || eastResult.output == MOVED_AND_AT_02)
             {
-                if (!visited.ContainsKey(newLocation))
+                if (!visited.ContainsKey(newLocation) || visited[newLocation].steps > steps)
                 {
-                    visited.Add(newLocation, MOVED_ONE);
-                    Explore(east, newLocation);
+                    visited[newLocation] = (eastResult.output, steps);
+                    Explore(east, newLocation, steps + 1);
                 }
             }
-            else
-                visited[newLocation] = eastResult.output;
+            else if (!visited.ContainsKey(newLocation) || visited[newLocation].steps > steps)
+            {
+                visited[newLocation] = (eastResult.output, steps);
+            }
 
             newLocation = (location.x + 1, location.y);
             var west = vm.Clone();
@@ -76,15 +82,36 @@ namespace Advent
             var westResult = west.compute(westQueue);
             if (westResult.output == MOVED_ONE || westResult.output == MOVED_AND_AT_02)
             {
-                if (!visited.ContainsKey(newLocation))
+                if (!visited.ContainsKey(newLocation) || visited[newLocation].steps > steps)
                 {
-                    visited.Add(newLocation, MOVED_ONE);
-                    Explore(west, newLocation);
+                    visited[newLocation] = (westResult.output, steps);
+                    Explore(west, newLocation, steps + 1);
                 }
             }
-            else
-                visited[newLocation] = westResult.output;
+            else if (!visited.ContainsKey(newLocation) || visited[newLocation].steps > steps)
+            {
+                visited[newLocation] = (westResult.output, steps);
+            }
 
+        }
+        static Dictionary<(int, int), int> filled = new Dictionary<(int, int), int>();
+        static void Fill((int x, int y) location, int steps)
+        {
+            if (filled.ContainsKey(location) && filled[location] > steps)
+                filled[location] = steps;
+            
+            if (!filled.ContainsKey(location))
+            {
+                filled[location] = steps;
+                if (visited.ContainsKey((location.x + 1, location.y)) && visited[(location.x + 1, location.y)].type == MOVED_ONE)
+                    Fill((location.x + 1, location.y), steps + 1);
+                if (visited.ContainsKey((location.x - 1, location.y)) && visited[(location.x - 1, location.y)].type == MOVED_ONE)
+                    Fill((location.x - 1, location.y), steps + 1);
+                if (visited.ContainsKey((location.x, location.y + 1)) && visited[(location.x, location.y + 1)].type == MOVED_ONE)
+                    Fill((location.x, location.y + 1), steps + 1);
+                if (visited.ContainsKey((location.x, location.y - 1)) && visited[(location.x, location.y - 1)].type == MOVED_ONE)
+                    Fill((location.x, location.y - 1), steps + 1);
+            }
         }
 
         static void Main(string[] args)
@@ -97,8 +124,11 @@ namespace Advent
 
             var vm = new IntercodeVM();
             vm.memory = tempMemory.ToArray();
-            Explore(vm, (0, 0));
+            Explore(vm, (0, 0), 0);
+            Console.WriteLine(visited.Single(x => x.Value.type == MOVED_AND_AT_02).Value.steps);
 
+            Fill(visited.Single(x => x.Value.type == MOVED_AND_AT_02).Key, 0);
+            Console.WriteLine(filled.OrderByDescending(x => x.Value).First().Value);
             Console.WriteLine("done.");
             Console.ReadLine();
         }
