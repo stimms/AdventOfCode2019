@@ -20,10 +20,9 @@ namespace Advent
             var output = new List<int>();
             for (int i = 0; i < phases; i++)
             {
-                Console.WriteLine(i);
-                int digitCounter = 5978261;
+                int digitCounter = 1;
                 output = new List<int>();
-                foreach (var c in workingSet.Skip(5978261))
+                foreach (var c in workingSet)
                 {
 
                     var multipliers = new List<int>();
